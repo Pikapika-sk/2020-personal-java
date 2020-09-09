@@ -50,7 +50,7 @@ public class Main {
             if(leftCnt == rightCnt && leftCnt!=0){
                 String subStr = tmp.substring(leftIndex,rightIndex+1);
                 JSONObject jso1=JSON.parseObject(subStr);
-               System.out.println(jso1.getString("id"));
+               System.out.println(jso1.getString("repo"));
                 leftCnt = 0 ;
                 rightCnt = 0;
                 leftIndex = -1 ;
