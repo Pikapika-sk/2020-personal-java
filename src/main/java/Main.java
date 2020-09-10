@@ -1,61 +1,75 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.*;
 
 
 public class Main {
 
-    public static String readJsonFile(String fileName) {
-        String jsonStr = "";
+    private static ArrayList<String> readJsonFile(String fileName) {
+        ArrayList<String> stringArrayList = new ArrayList<>();
         try {
             File jsonFile = new File(fileName);
             FileReader fileReader = new FileReader(jsonFile);
-
-            Reader reader = new InputStreamReader(new FileInputStream(jsonFile), "utf-8");
-            int ch = 0;
-            StringBuffer sb = new StringBuffer();
-            while ((ch = reader.read()) != -1) {
-                sb.append((char) ch);
+            BufferedReader bf = new BufferedReader(fileReader);
+            String str;
+            while ((str = bf.readLine()) != null) {
+                stringArrayList.add(str);
             }
+            bf.close();
             fileReader.close();
-            reader.close();
-            jsonStr = sb.toString();
-            return jsonStr;
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
+        if (stringArrayList.size() == 0) return null;
+        return stringArrayList;
+
     }
 
     public static void main(String[] args) {
+
         String fileName = "C:\\Users\\78430\\Desktop\\2020-personal-java\\src\\trim.json";
-        String tmp = readJsonFile(fileName);
+        ArrayList<String> jsonList = readJsonFile(fileName);
+        Map<String, Result> map1 = new HashMap<>(); //个人 4 种事件的数量。
+        Map<String, Result> map2 = new HashMap<>();//每一个项目的 4 种事件的数量。
+        Map<String, Result> map3 = new HashMap<>();//每一个人在每一个项目的 4 种事件的数量。
 
-        int leftCnt  = 0 ,rightCnt= 0 ;
-        int leftIndex = -1 ,rightIndex = -1 ;
-        int i ;
-        for( i =0 ; i<tmp.length() ;i++)
-        {
 
-            if (tmp.charAt(i) == '{' ) {
-                leftCnt++;
-                if(leftIndex==-1)
-                    leftIndex= i ;
-            } else if (tmp.charAt(i) == '}') {
-                rightCnt++;
-                rightIndex = i ;
+        for (int i = 0; i < jsonList.size(); i++) {
+            String tmp = jsonList.get(i);
+            //String subStr = tmp.substring(leftIndex,rightIndex+1);
+            JSONObject jso1 = JSON.parseObject(tmp);
+            String actor = jso1.getString("actor");
+            JSONObject jos2 = JSON.parseObject(actor);
+            String id = jos2.getString("id");
+            if(!map1.containsKey(id))
+            {
+                map1.put(id,new Result());
             }
-            if(leftCnt == rightCnt && leftCnt!=0){
-                String subStr = tmp.substring(leftIndex,rightIndex+1);
-                JSONObject jso1=JSON.parseObject(subStr);
-               System.out.println(jso1.getString("repo"));
-                leftCnt = 0 ;
-                rightCnt = 0;
-                leftIndex = -1 ;
+            Result res = map1.get(id);
+
+            String event = jso1.getString("type");
+
+            if(event.equals("PushEvent" ) ) {
+                res.PushEvent ++ ;
+            }else if(event.equals("IssueCommentEvent") ){
+                res.IssuesEvent ++ ;
+            }else if(event.equals("PullRequestEvent"))
+                res.PullRequestEvent ++ ;
+            else if(event.equals("IssuesEvent")){
+                res.IssuesEvent++;
             }
+            map1.put(id,res);
+        }
+        for(Map.Entry<String, Result> entry : map1.entrySet()){
+            System.out.println("id = " +entry.getKey() + " value = "+ entry.getValue());
         }
 
     }
+
+
 }
