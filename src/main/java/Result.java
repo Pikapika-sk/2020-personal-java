@@ -8,7 +8,7 @@ public class Result {
 
     @Override
     public String toString() {
-        return "Result{" +
+        return " Result{" +
                 "PushEvent=" + PushEvent +
                 ", IssueCommentEvent=" + IssueCommentEvent +
                 ", IssuesEvent=" + IssuesEvent +
