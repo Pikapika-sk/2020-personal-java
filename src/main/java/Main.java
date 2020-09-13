@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alibaba.fastjson.*;
 
 
+
 public class Main {
 
 
@@ -51,15 +52,17 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String fileName = "F:\\test.json";
+        String fileName = "F:\\2000.json";
         ArrayList<String> jsonList = readJsonFile(fileName);
         Map<String, Result> map1 = new HashMap<>(); //个人 4 种事件的数量。
         Map<String, Result> map2 = new HashMap<>();//每一个项目的 4 种事件的数量。
         Map<String, Result> map3 = new HashMap<>();//每一个人在每一个项目的 4 种事件的数量。
 
         //     System.out.println(jsonList.size());
+        System.out.println(jsonList.size());
         for (int i = 0; i < jsonList.size(); i++) {
             String tmp = jsonList.get(i);
+       //     System.out.println(i);
             //   System.out.println("tmp = "+ tmp);
             tmp = justify(tmp);
             //    System.out.println(tmp);
@@ -115,8 +118,8 @@ public class Main {
             map3.put(idAndRepoId, iAndRepoRes);
 
         }
-        for (Map.Entry<String, Result> entry : map1.entrySet()) {
-            System.out.println("id = " + entry.getKey() + entry.getValue());
+            for (Map.Entry<String, Result> entry : map1.entrySet()) {
+                System.out.println("id = " + entry.getKey() + entry.getValue());
         }
         for (Map.Entry<String, Result> entry : map2.entrySet()) {
             System.out.println("repoId = " + entry.getKey() + entry.getValue());
