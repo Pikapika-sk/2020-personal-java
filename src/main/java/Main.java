@@ -52,7 +52,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String fileName = "F:\\2000.json";
+        String fileName = ".\\src\\test.json";
         ArrayList<String> jsonList = readJsonFile(fileName);
         Map<String, Result> map1 = new HashMap<>(); //个人 4 种事件的数量。
         Map<String, Result> map2 = new HashMap<>();//每一个项目的 4 种事件的数量。
