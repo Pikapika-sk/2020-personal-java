@@ -2,82 +2,52 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 import com.alibaba.fastjson.*;
 
-
+//还未处理的：init后的Map如何存储成文件判断时再读入
+// 类型3判断有错，感觉是/的原因
 
 public class Main {
 
-
-    private static ArrayList<String> readJsonFile(String fileName) {
-        ArrayList<String> stringArrayList = new ArrayList<>();
+    static Map<String, Result> map1 = new HashMap<>(); //个人 4 种事件的数量。
+    static Map<String, Result> map2 = new HashMap<>();//每一个项目的 4 种事件的数量。
+    static Map<String, Result> map3 = new HashMap<>();//每一个人在每一个项目的 4 种事件的数量。
+    private static void init(String fileName) {
+        ArrayList<String> jsonList = new ArrayList<>();
+        File dir = new File(fileName);
+        File[] files = dir.listFiles(file -> file.getName().endsWith(".json"));
         try {
-            File jsonFile = new File(fileName);
-            FileReader fileReader = new FileReader(jsonFile);
-            BufferedReader bf = new BufferedReader(fileReader);
-            String str;
-            while ((str = bf.readLine()) != null) {
-                //            System.out.println("str = "+ str);
-                stringArrayList.add(str);
+            for (File jsonFile : files) {
+                FileReader fileReader = new FileReader(jsonFile);
+                BufferedReader bf = new BufferedReader(fileReader);
+                String str;
+                while ((str = bf.readLine()) != null) {
+                    //            System.out.println("str = "+ str);
+                    jsonList.add(str);
+                }
+                bf.close();
+                fileReader.close();
             }
-            bf.close();
-            fileReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (stringArrayList.size() == 0) return null;
-        return stringArrayList;
-
-    }
-
-    private static String justify(String s) {
-        int cnt = 0;
-        int index = -1;
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '\"') {
-                cnt++;
-            }
-            if (cnt == 36) {
-                index = i;
-                break;
-            }
-        }
-        String ans = s.substring(0, index);
-        ans = ans + "\"}}";
-
-        return ans;
-    }
-
-
-    public static void main(String[] args) {
-
-        String fileName = ".\\src\\test.json";
-
-
-        ArrayList<String> jsonList = readJsonFile(fileName);
-        Map<String, Result> map1 = new HashMap<>(); //个人 4 种事件的数量。
-        Map<String, Result> map2 = new HashMap<>();//每一个项目的 4 种事件的数量。
-        Map<String, Result> map3 = new HashMap<>();//每一个人在每一个项目的 4 种事件的数量。
-
-        //     System.out.println(jsonList.size());
-        System.out.println(jsonList.size());
         for (int i = 0; i < jsonList.size(); i++) {
+          //  System.out.println("i = "+ i);
             String tmp = jsonList.get(i);
-       //     System.out.println(i);
+            //     System.out.println(i);
             //   System.out.println("tmp = "+ tmp);
             tmp = justify(tmp);
-            //    System.out.println(tmp);
+         //   System.out.println(tmp);
             JSONObject jso1 = JSON.parseObject(tmp);
             String actor = jso1.getString("actor");
             JSONObject jso2 = JSON.parseObject(actor);
-            String id = jso2.getString("id");
+            String id = jso2.getString("login");
 
             String repo = jso1.getString("repo");
             JSONObject jso3 = JSON.parseObject(repo);
-            String repoId = jso3.getString("id");
+            String repoId = jso3.getString("name");
 
-            String idAndRepoId = "id:" + id + " repoId:" + repoId;
+            String idAndRepoId = "name:" + id + " repoName:" + repoId;
 
             //  System.out.println(repoId);
             if (!map1.containsKey(id)) {
@@ -120,16 +90,92 @@ public class Main {
             map3.put(idAndRepoId, iAndRepoRes);
 
         }
-            for (Map.Entry<String, Result> entry : map1.entrySet()) {
-                System.out.println("id = " + entry.getKey() + entry.getValue());
-        }
-        for (Map.Entry<String, Result> entry : map2.entrySet()) {
-            System.out.println("repoId = " + entry.getKey() + entry.getValue());
-        }
+//        System.out.println(map1.size());
+//        System.out.println(map2.size());
+//        System.out.println(map3.size());
+    }
 
-        for (Map.Entry<String, Result> entry : map3.entrySet()) {
-            System.out.println(entry.getKey() + entry.getValue());
+    private static String justify(String s) {
+        int cnt = 0;
+        int index = -1;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '\"') {
+                cnt++;
+            }
+            if (cnt == 40) {
+                index = i;
+                break;
+            }
         }
+        String ans = s.substring(0, index);
+        ans = ans + "\"}}";
+
+        return ans;
+    }
+
+    public static int output(Result r, String event)
+    {
+        int ans=0;
+        if(event.equals("PushEvent")){
+            ans= r.PushEvent;
+        }else if(event.equals("IssueCommentEvent")){
+            ans = r.IssueCommentEvent;
+        }else if(event.equals("PullRequestEvent")){
+            ans = r.PushEvent;
+        }else if(event.equals("IssuesEvent")){
+            ans = r.IssuesEvent;
+        }
+        return ans;
+    }
+
+    public static int countFromUser(String user,String event){
+        Result r = map1.get(user);
+        return output(r,event);
 
     }
+
+    public static int countFromRepo(String repo,String event){
+
+        Result r = map2.get(repo);
+        return output(r,event);
+    }
+    public static int countFromUserAndRepo(String idAndRepoId,String event){
+        Result r = map3.get(idAndRepoId);
+        return output(r,event);
+    }
+    public static void main(String[] args) {
+       init("C:\\Users\\78430\\Desktop\\test\\json");
+
+        ArrayList<String> jsonList=null;
+        String testUser=null,testEvent=null,testRepo=null,filename =null;
+        for(String arg : args){
+            System.out.println("arg =" +arg);
+        }
+  //      System.out.println(map1.size()+" "+ map2.size()+map3.size());
+        if (args[0].equals("--init")  || args[0] .equals("-i "))
+        {
+            filename = args[1];
+            init(filename);
+        }else if(args[0].equals("-u")||args[0].equals("--user")){
+            testUser = args[1];
+            if(args[2].equals("-e")||args[2].equals("--event")){
+                testEvent = args[3];
+                System.out.println(countFromUser( testUser, testEvent));
+            }else if(args[2].equals("-r")|| args[2].equals("repo")){
+                testRepo = args[3];
+                testEvent = args[5];
+                System.out.println( countFromUserAndRepo(testUser+testRepo,testEvent));
+            }
+        }else if(args[0].equals("-r")||args[0].equals("--repo")){
+            testRepo = args[1];
+            testEvent = args[3];
+            System.out.println(countFromRepo( testRepo,testEvent));
+        }
+     //   System.out.println(map1.size());
+     //   System.out.println(map2.size());
+      //  System.out.println(map3.size());
+
+    }
+
+
 }
