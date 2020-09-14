@@ -144,7 +144,7 @@ public class Main {
         return output(r,event);
     }
     public static void main(String[] args) {
-       init("C:\\Users\\78430\\Desktop\\test\\json");
+       // init("C:\\Users\\78430\\Desktop\\test\\json");
 
         ArrayList<String> jsonList=null;
         String testUser=null,testEvent=null,testRepo=null,filename =null;
