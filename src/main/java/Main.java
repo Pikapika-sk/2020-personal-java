@@ -47,7 +47,8 @@ public class Main {
             JSONObject jso3 = JSON.parseObject(repo);
             String repoId = jso3.getString("name");
 
-            String idAndRepoId = "name:" + id + " repoName:" + repoId;
+            String idAndRepoId =   id +   repoId;
+        //    System.out.println(idAndRepoId);
 
             //  System.out.println(repoId);
             if (!map1.containsKey(id)) {
@@ -62,7 +63,8 @@ public class Main {
             Result res = map1.get(id);
             Result repoRes = map2.get(repoId);
             Result iAndRepoRes = map3.get(idAndRepoId);
-
+            //test
+//            System.out.println("id = "+ id +" repoId = "+ repoId + "AndId = " + idAndRepoId );
             String event = jso1.getString("type");
 
             if (event.equals("PushEvent")) {
@@ -116,15 +118,17 @@ public class Main {
     public static int output(Result r, String event)
     {
         int ans=0;
+        System.out.println("event = "+ event);
         if(event.equals("PushEvent")){
             ans= r.PushEvent;
         }else if(event.equals("IssueCommentEvent")){
             ans = r.IssueCommentEvent;
         }else if(event.equals("PullRequestEvent")){
-            ans = r.PushEvent;
+            ans = r.PullRequestEvent;
         }else if(event.equals("IssuesEvent")){
             ans = r.IssuesEvent;
         }
+     //   System.out.println("ans = "+ ans);
         return ans;
     }
 
@@ -145,31 +149,41 @@ public class Main {
     }
     public static void main(String[] args) {
        // init("C:\\Users\\78430\\Desktop\\test\\json");
+        init("C:\\Users\\78430\\Desktop\\test\\json");
+//
+//        args[0] = "-u";
+//        args[1] ="cdupuis";
+//        args[2] ="-r";
+//        args[3] ="atomist/automation-client";
+//        args[4] ="-e";
+//        args[5] ="PushEvent";
+
 
         ArrayList<String> jsonList=null;
         String testUser=null,testEvent=null,testRepo=null,filename =null;
-        for(String arg : args){
-            System.out.println("arg =" +arg);
-        }
+//        for(String arg : args){
+//            System.out.println("arg =" +arg);
+//        }
   //      System.out.println(map1.size()+" "+ map2.size()+map3.size());
-        if (args[0].equals("--init")  || args[0] .equals("-i "))
-        {
-            filename = args[1];
-            init(filename);
-        }else if(args[0].equals("-u")||args[0].equals("--user")){
-            testUser = args[1];
-            if(args[2].equals("-e")||args[2].equals("--event")){
+        if(args.length !=0) {
+            if (args[0].equals("--init") || args[0].equals("-i ")) {
+                filename = args[1];
+                init(filename);
+            } else if (args[0].equals("-u") || args[0].equals("--user")) {
+                testUser = args[1];
+                if (args[2].equals("-e") || args[2].equals("--event")) {
+                    testEvent = args[3];
+                    System.out.println(countFromUser(testUser, testEvent));
+                } else if (args[2].equals("-r") || args[2].equals("repo")) {
+                    testRepo = args[3];
+                    testEvent = args[5];
+                    System.out.println(countFromUserAndRepo(testUser + testRepo, testEvent));
+                }
+            } else if (args[0].equals("-r") || args[0].equals("--repo")) {
+                testRepo = args[1];
                 testEvent = args[3];
-                System.out.println(countFromUser( testUser, testEvent));
-            }else if(args[2].equals("-r")|| args[2].equals("repo")){
-                testRepo = args[3];
-                testEvent = args[5];
-                System.out.println( countFromUserAndRepo(testUser+testRepo,testEvent));
+                System.out.println(countFromRepo(testRepo, testEvent));
             }
-        }else if(args[0].equals("-r")||args[0].equals("--repo")){
-            testRepo = args[1];
-            testEvent = args[3];
-            System.out.println(countFromRepo( testRepo,testEvent));
         }
      //   System.out.println(map1.size());
      //   System.out.println(map2.size());
