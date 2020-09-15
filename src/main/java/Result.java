@@ -1,7 +1,7 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Result implements Serializable {
+public class Result implements Serializable { //序列化
     int PushEvent;
     int IssueCommentEvent;
     int IssuesEvent;

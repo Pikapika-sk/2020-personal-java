@@ -2,14 +2,10 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 import com.alibaba.fastjson.*;
 import org.apache.commons.io.FileUtils;
 
-import javax.lang.model.element.NestingKind;
-import javax.print.DocFlavor;
-
-//还未处理的：init后的Map如何存储成文件判断时再读入
-// 类型3判断有错，感觉是/的原因
 
 public class Main {
 
@@ -17,9 +13,11 @@ public class Main {
     static Map<String, Result> map2 = new HashMap<>();//每一个项目的 4 种事件的数量。
     static Map<String, Result> map3 = new HashMap<>();//每一个人在每一个项目的 4 种事件的数量。
 
+    //初始化
     private static void init(String fileName) throws IOException {
         ArrayList<String> jsonList = new ArrayList<>();
         File dir = new File(fileName);
+        //读入文件列表转存JSON于jsonList中
         File[] files = dir.listFiles(file -> file.getName().endsWith(".json"));
         try {
             for (File jsonFile : files) {
@@ -27,7 +25,6 @@ public class Main {
                 BufferedReader bf = new BufferedReader(fileReader);
                 String str;
                 while ((str = bf.readLine()) != null) {
-                    //            System.out.println("str = "+ str);
                     jsonList.add(str);
                 }
                 bf.close();
@@ -36,13 +33,12 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //遍历jsonList，进行统计
         for (int i = 0; i < jsonList.size(); i++) {
-            //  System.out.println("i = "+ i);
+            //"裁剪“
             String tmp = jsonList.get(i);
-            //     System.out.println(i);
-            //   System.out.println("tmp = "+ tmp);
             tmp = justify(tmp);
-            //   System.out.println(tmp);
+            //获取所需信息
             JSONObject jso1 = JSON.parseObject(tmp);
             String actor = jso1.getString("actor");
             JSONObject jso2 = JSON.parseObject(actor);
@@ -51,11 +47,9 @@ public class Main {
             String repo = jso1.getString("repo");
             JSONObject jso3 = JSON.parseObject(repo);
             String repoId = jso3.getString("name");
-
+            //创建第三种查询的ID
             String idAndRepoId = id + repoId;
-            //    System.out.println(idAndRepoId);
-
-            //  System.out.println(repoId);
+            //创建3种Result并插入对应的Map
             if (!map1.containsKey(id)) {
                 map1.put(id, new Result());
             }
@@ -68,8 +62,6 @@ public class Main {
             Result res = map1.get(id);
             Result repoRes = map2.get(repoId);
             Result iAndRepoRes = map3.get(idAndRepoId);
-            //test
-//            System.out.println("id = "+ id +" repoId = "+ repoId + "AndId = " + idAndRepoId );
             String event = jso1.getString("type");
 
             if (event.equals("PushEvent")) {
@@ -89,7 +81,6 @@ public class Main {
                 repoRes.IssuesEvent++;
                 iAndRepoRes.IssuesEvent++;
             } else {
-                //      System.out.println("i = " + i );
                 continue;
             }
             map1.put(id, res);
@@ -97,21 +88,18 @@ public class Main {
             map3.put(idAndRepoId, iAndRepoRes);
 
         }
-        //   System.out.println(map3.keySet().size());
 
-
-        String s1 = JSONObject.toJSONString(map1);;
+        //map转换为JSON String
+        String s1 = JSONObject.toJSONString(map1);
         String s2 = JSONObject.toJSONString(map2);
         String s3 = JSONObject.toJSONString(map3);
         // 将json写入文件
-
-    //   System.out.println(s1);
         FileUtils.writeStringToFile(new File("map1.json"), s1, "UTF-8");
         FileUtils.writeStringToFile(new File("map2.json"), s2, "UTF-8");
         FileUtils.writeStringToFile(new File("map3.json"), s3, "UTF-8");
-
     }
 
+    //”裁剪“读入的JSON
     private static String justify(String s) {
         int cnt = 0;
         int index = -1;
@@ -129,82 +117,44 @@ public class Main {
 
         return ans;
     }
-
-    public static int output(Result r, String event) {
-        int ans = 0;
-        System.out.println("event = " + event);
-        if (event.equals("PushEvent")) {
-            ans = r.PushEvent;
-        } else if (event.equals("IssueCommentEvent")) {
-            ans = r.IssueCommentEvent;
-        } else if (event.equals("PullRequestEvent")) {
-            ans = r.PullRequestEvent;
-        } else if (event.equals("IssuesEvent")) {
-            ans = r.IssuesEvent;
-        }
-        //   System.out.println("ans = "+ ans);
-        return ans;
-    }
-
+    //查询个人 4 种事件的数量
     public static void countFromUser(String user, String event) throws IOException {
-        String tmp = event.substring(0,1);
+        String tmp = event.substring(0, 1);
         tmp = tmp.toLowerCase();
-        event = tmp +event.substring(1,event.length());
+        event = tmp + event.substring(1, event.length());
         String s = FileUtils.readFileToString(new File("map1.json"), "UTF-8");
-    //   System.out.println(s);
-   //     System.out.println("user = "+ user + "event = " + event);
         JSONObject jsonObject = JSONObject.parseObject(s);
-  //      System.out.println(jsonObject);
         JSONObject object = jsonObject.getJSONObject(user);
-     //   System.out.println(object);
-   //     System.out.println("result = " +result);
-       if(object !=null){
-           System.out.println( object.getInteger(event));
-       }
-
+        if (object != null) {
+            System.out.println(object.getInteger(event));
+        }
     }
-
+    //查询每一个项目的 4 种事件的数量
     public static void countFromRepo(String repo, String event) throws IOException {
-        String tmp = event.substring(0,1);
+        String tmp = event.substring(0, 1);
         tmp = tmp.toLowerCase();
-        event = tmp +event.substring(1,event.length());
+        event = tmp + event.substring(1, event.length());
         String s = FileUtils.readFileToString(new File("map2.json"), "UTF-8");
         JSONObject jsonObject = JSONObject.parseObject(s);
         JSONObject object = jsonObject.getJSONObject(repo);
         System.out.println(object.getInteger(event));
     }
-
+    //每一个人在每一个项目的 4 种事件的数量
     public static void countFromUserAndRepo(String idAndRepoId, String event) throws IOException {
-        String tmp = event.substring(0,1);
+        String tmp = event.substring(0, 1);
         tmp = tmp.toLowerCase();
-        event = tmp +event.substring(1,event.length());
+        event = tmp + event.substring(1, event.length());
         String s = FileUtils.readFileToString(new File("map3.json"), "UTF-8");
         JSONObject jsonObject = JSONObject.parseObject(s);
         JSONObject object = jsonObject.getJSONObject(idAndRepoId);
         if (object != null) {
-            System.out.println( object.getInteger(event));
+            System.out.println(object.getInteger(event));
         }
     }
 
     public static void main(String[] args) throws IOException {
-        // init("C:\\Users\\78430\\Desktop\\test\\json");
-      //  init("C:\\Users\\78430\\Desktop\\test\\json");
-//
-//        args[0] = "-u";
-//        args[1] ="cdupuis";
-//        args[2] ="-r";
-//        args[3] ="atomist/automation-client";
-//        args[4] ="-e";
-//        args[5] ="PushEvent";
-
-
-
-        ArrayList<String> jsonList = null;
         String testUser = null, testEvent = null, testRepo = null, filename = null;
-//        for(String arg : args){
-//            System.out.println("arg =" +arg);
-//        }
-        //      System.out.println(map1.size()+" "+ map2.size()+map3.size());
+        //命令行读入并判断
         if (args.length != 0) {
             if (args[0].equals("--init") || args[0].equals("-i ")) {
                 filename = args[1];
@@ -227,13 +177,5 @@ public class Main {
                 countFromRepo(testRepo, testEvent);
             }
         }
-         //  countFromUser("waleko","PushEvent");
-        //java -Dfile.encoding=UTF-8 -jar GHAnalysis.jar -u  cdupuis -e PushEvent
-        //   System.out.println(map1.size());
-        //   System.out.println(map2.size());
-        //  System.out.println(map3.size());
-
     }
-
-
 }
